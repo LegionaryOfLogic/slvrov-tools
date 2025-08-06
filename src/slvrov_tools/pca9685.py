@@ -22,7 +22,7 @@ class PCA9685_Device_Descriptor:
         return f"Duty Range: {self.min_duty}-{self.max_duty}, Default Duty: {self.default}, Pins: {self.pins}"
     
 
-from misc_tools import is_raspberry_pi
+from .misc_tools import is_raspberry_pi
 
 if is_raspberry_pi():
 
