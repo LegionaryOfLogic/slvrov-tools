@@ -210,7 +210,6 @@ class Ranged_Int():
         return f"Min: {self.MIN}, Max: {self.MAX}, Curr: {self.current}"
 
 
-@PendingDeprecationWarning
 def map_point_between_circles(point: tuple, circle_a: Circle, circle_b: Circle, angle: float, form: str='d') -> tuple:
     """
     Transforms a point on circle_a to a corresponding point on circle_b using
