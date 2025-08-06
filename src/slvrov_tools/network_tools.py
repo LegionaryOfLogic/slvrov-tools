@@ -2,7 +2,7 @@
 
 import socket
 from concurrent.futures import ThreadPoolExecutor
-from misc_tools import at_exit, at_interrupt
+from .misc_tools import at_exit, at_interrupt
 from typing import Callable
 
 protocols_by_transport = {

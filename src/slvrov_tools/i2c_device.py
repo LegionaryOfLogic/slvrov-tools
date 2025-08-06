@@ -1,7 +1,7 @@
 # Caleb Hofschneider SLVROV 2025
 
 import smbus2 # type: ignore
-from misc_tools import fits_in_bits, at_exit, at_interrupt
+from .misc_tools import fits_in_bits, at_exit, at_interrupt
 
 
 class I2C_Device:

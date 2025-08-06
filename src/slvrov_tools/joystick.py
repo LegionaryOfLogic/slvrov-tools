@@ -1,7 +1,7 @@
 # Caleb Hofschneider SLVROV 2025
 
 import sdl2  # type: ignore
-from misc_tools import is_raspberry_pi
+from .misc_tools import is_raspberry_pi
 
 
 def SDL2_Joystick():
