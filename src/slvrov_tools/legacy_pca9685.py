@@ -2,7 +2,7 @@
 
 from time import sleep
 from dataclasses import dataclass
-from misc_tools import is_raspberry_pi
+from .misc_tools import is_raspberry_pi
 
 
 @dataclass
