@@ -16,9 +16,10 @@ def diff(a: float, b: float) -> float:
         float: The difference of a and b.
     """
 
-    a = abs(a)
-    b = abs(b)
-    return max([a, b]) - min([a, b])
+    mx = max((a, b))
+    mn = min((a, b))
+
+    return mx - mn
 
 
 def rotate_point(point: tuple, angle: float, form: str='d') -> tuple:
