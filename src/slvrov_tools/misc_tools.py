@@ -29,7 +29,7 @@ def at_interrupt(func):
     cleanup_functions_variable_that_no_one_will_ever_overwrite.append(func)
 
 
-def interrupt_exec():
+def interrupt_exec(signum, frame):
     """
     Runs at CTL-C and executes all of the functinos submitted by at_interrupt.
     """
