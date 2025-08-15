@@ -5,6 +5,17 @@ from .misc_tools import is_raspberry_pi
 
 
 def SDL2_Joystick():
+    """
+    Initialises a joystick based on the SLD2 library.
+
+    Returns:
+        The SDL2 joystick object
+
+    Raises:
+        Exception: if no joysticks are connected.
+        Exception: if there is a problme reading the joystick.
+    """
+    
     sdl2.SDL_Init(sdl2.SDL_INIT_JOYSTICK | sdl2.SDL_INIT_EVENTS)
     if sdl2.SDL_NumJoysticks() < 1: raise Exception("No joysticks connected.")
 
