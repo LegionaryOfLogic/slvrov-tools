@@ -1,36 +1,14 @@
 # Caleb Hofschneider SLV ROV 1/2025
 
 from time import sleep
-from dataclasses import dataclass
 from .misc_tools import is_raspberry_pi
-
-
-@dataclass
-class PCA9685_Device_Descriptor:
-
-    min_duty: int | None
-    max_duty: int | None
-    default: int
-    pins: list
-    action_header: str | None=None
-
-    def __post_init__(self):
-        if self.action_header is not None: self.encoded_action_header = self.action_header.value.encode()
-        else: self.encoded_action_header = None
-
-    def __repr__(self):
-        return f"Duty Range: {self.min_duty}-{self.max_duty}, Default Duty: {self.default}, Pins: {self.pins}, Action Header: {self.action_header}, Encoded Header: {self.encoded_action_header}"
-
-    def __str__(self):
-        return f"Duty Range: {self.min_duty}-{self.max_duty}, Default Duty: {self.default}, Pins: {self.pins}"
 
 
 if is_raspberry_pi():
 
     import smbus2 # type: ignore -- smbus should be included on Raspberry Pis
 
-    @PendingDeprecationWarning
-    class PCA9685_BASIC:
+    class Legacy_PCA9685_BASIC:
         """
         Class allowing basic use of the PCA9685 16-Channel, 12-bit PWM Driver
 
@@ -160,7 +138,7 @@ if is_raspberry_pi():
             self.max_time = max_time
             self.max_rotation = max_rotation
 
-            self.driver = PCA9685_BASIC(pwm_frequency, address, bus)
+            self.driver = Legacy_PCA9685_BASIC(pwm_frequency, address, bus)
             self.driver.write_prescale()
 
         def rotate(self, degrees, wait_time):
