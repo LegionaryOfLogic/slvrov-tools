@@ -51,7 +51,7 @@ class PCA9685(I2C_Device):
         """
         
         super().__init__(address, bus)
-        self.frequency = pwm_frequency
+        self.pwm_frequency = pwm_frequency
 
     def clear(self):
         """
