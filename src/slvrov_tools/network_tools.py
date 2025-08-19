@@ -393,9 +393,9 @@ class UDP_Communicator(Network_Communicator):
             Exception: If an error occurs during packet reception. The socket will be closed.
         """
 
-        if IP is not None: self.socket.connect(to_IP=IP, to_port=port)
+        if IP is not None: self.connect_to(to_IP=IP, to_port=port)
         else:
-            if self.connected is None: raise Exception("Please provide IP and port")
+            if self.connected is None or not self.connected: raise Exception("Please provide IP and port")
 
         if count == "continual":
             try:
