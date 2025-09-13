@@ -52,6 +52,7 @@ class PCA9685(I2C_Device):
         
         super().__init__(address, bus)
         self.pwm_frequency = pwm_frequency
+        self.pwm_time = 1_000_000 / pwm_frequency
 
     def clear(self):
         """
@@ -85,6 +86,7 @@ class PCA9685(I2C_Device):
 
         if pin_number > 15: raise Exception("Pin number out of range")
 
+        # The naming 'off time' is confusing. The cycle will be on for the duration of off_time, so the time it will turn off will be the value of off_time
         off_time = round(pulse_length / self.pwm_time * 4096)
         pin_offset = int(4 * pin_number)  # Python converts to float automatically, so need to convert back to int
 

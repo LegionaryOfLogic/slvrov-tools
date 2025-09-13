@@ -124,7 +124,7 @@ class Servo:
         self.max_time = max_time
         self.max_rotation = max_rotation
 
-        self.driver = Legacy_PCA9685_BASIC(pwm_frequency, address, bus)
+        self.driver = PCA9685_BASIC(pwm_frequency, address, bus)
         self.driver.write_prescale()
 
     def rotate(self, degrees, wait_time):
