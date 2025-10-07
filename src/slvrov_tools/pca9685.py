@@ -90,7 +90,7 @@ class PCA9685(I2C_Device):
         off_time = round(pulse_length / self.pwm_time * 4096)
         pin_offset = int(4 * pin_number)  # Python converts to float automatically, so need to convert back to int
 
-        if not start:  # Else duty starts at 0 seconds by default -- allows for future customization
+        if start:  # Else duty starts at 0 seconds by default -- allows for future customization
             start *= 4096 / self.pwm_time
             self.write_byte(pin_offset + 6, start & 0xFF)
             self.write_byte(pin_offset + 7, start >> 8)
