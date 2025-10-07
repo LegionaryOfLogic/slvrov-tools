@@ -6,6 +6,7 @@ from .i2c_device import I2C_Device
 
 
 @dataclass
+@PendingDeprecationWarning
 class PCA9685_Device_Descriptor:
 
     min_duty: int | None
@@ -22,6 +23,14 @@ class PCA9685_Device_Descriptor:
         return f"Duty Range: {self.min_duty}-{self.max_duty}, Default Duty: {self.default}, Pins: {self.pins}, Action Header: {self.action_header}, Encoded Header: {self.encoded_action_header}"
     def __str__(self):
         return f"Duty Range: {self.min_duty}-{self.max_duty}, Default Duty: {self.default}, Pins: {self.pins}"
+
+
+@dataclass
+class PCA9685_Device:
+    min_pwm: int
+    max_pwm: int
+    pins: list
+    default: None | int
     
 
 class PCA9685(I2C_Device):
