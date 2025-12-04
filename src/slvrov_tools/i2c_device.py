@@ -1,7 +1,7 @@
 # Caleb Hofschneider SLVROV 2025
 
 import smbus2 # type: ignore
-from .misc_tools import fits_in_bits, at_exit, at_interrupt
+from .misc_tools import fits_in_bits, at_exit
 
 
 class I2C_Device:
@@ -32,8 +32,7 @@ class I2C_Device:
 
         self.bus = smbus2.SMBus(bus)
         
-        self.closed = False
-        at_interrupt(self.close)
+        self.closed: bool = False
         at_exit(self.close)
 
     def write_byte(self, register: int, value: int):

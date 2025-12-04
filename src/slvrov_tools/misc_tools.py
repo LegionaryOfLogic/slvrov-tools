@@ -17,36 +17,6 @@ def is_raspberry_pi() -> bool:
     return "raspberrypi" in uname.node.lower()
 
 
-cleanup_functions_variable_that_no_one_will_ever_overwrite = []
-def at_interrupt(func):
-    """
-    Adds function to a list to be exectuted at CTL-C.
-
-    Args:
-        func (function): The function to be run at CTL-C.
-    """
-
-    cleanup_functions_variable_that_no_one_will_ever_overwrite.append(func)
-
-
-def interrupt_exec(signum, frame):
-    """
-    Runs at CTL-C and executes all of the functinos submitted by at_interrupt.
-    """
-
-    for func in cleanup_functions_variable_that_no_one_will_ever_overwrite:
-        func()
-
-
-def setup_interrupt_handlers():
-    """
-    Sets up the signal handers. Allows it so be called non-intrusively by the user.
-    """
-
-    global interrupt_exec
-    signal.signal(signal.SIGINT, interrupt_exec)
-
-
 def at_exit(func):
     """
     Allows a function to be run when the program terminates smoothly.
