@@ -1,6 +1,6 @@
 [project]
 name = "slvrov-tools"
-version = "0.1.11"
+version = "0.1.12"
 description = "Tools for math, networking, joysticks, I2C devices, and more for use in SLVROV"
 readme = "README.md"
 license = { text = "MIT" }
@@ -11,7 +11,8 @@ requires-python = ">=3.7"
 
 dependencies = [
     "smbus2>=0.4.1; sys_platform == 'linux'",
-    "PySDL2>=0.9.7"
+    "PySDL2>=0.9.7",
+    "opencv-python>=4.12"
 ]
 
 [build-system]
