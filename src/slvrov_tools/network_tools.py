@@ -2,7 +2,7 @@
 
 import socket
 from concurrent.futures import ThreadPoolExecutor
-from .misc_tools import at_exit, at_interrupt
+from .misc_tools import at_exit
 from typing import Callable
 
 protocols_by_transport = {
@@ -104,7 +104,6 @@ class Network_Communicator:
         self.executor = ThreadPoolExecutor(max_workers=max_threads)
 
         at_exit(self.close)
-        at_interrupt(self.close)
 
     def test_packet_handler(self, *args) -> str:
         """
