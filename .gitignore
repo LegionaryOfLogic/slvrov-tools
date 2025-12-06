@@ -1,3 +1,7 @@
+# CLI that updates pypl for me without having to manually run build, twine, etc.
+update_pypl.py
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

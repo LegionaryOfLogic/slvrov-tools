@@ -1,6 +1,7 @@
 # Caleb Hofschneider SLV ROV 5/2025
 
 import socket
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from .misc_tools import at_exit
 from typing import Callable
@@ -416,3 +417,41 @@ class UDP_Communicator(Network_Communicator):
                 
                 if threaded: self.spawn_handler_thread(data)
                 else: self.packet_handler(data)
+
+
+def nmcli_modify(ipv4_address: str, connection_name: str, ipv4_gateway: str | None=None, ipv4_dns: str="8.8.8.8") -> None:
+    start_modify_command = [
+        "nmcli",
+        "connection",
+        "modify",
+        connection_name,
+        "ipv4.addresses",
+        ipv4_address
+        ]
+
+    end_modify_command = [
+        "ipv4.dns",
+        ipv4_dns,
+        "ipv4.method",
+        "manual"
+        ]
+
+    if ipv4_gateway is not None: modify_command = start_modify_command + ["ipv4.gateway", ipv4_gateway] + end_modify_command
+    else: modify_command = start_modify_command + end_modify_command
+
+    try:
+        subprocess.run(modify_command, check=True)
+    except subprocess.CalledProcessError as error:
+        print(f"Commadn failed modifying network settings:\n{error}")
+
+
+def cycle_connection(connection_name: str) -> None:
+    try:
+        subprocess.run(["nmcli", "connection", "down", connection_name], check=True)
+    except subprocess.CalledProcessError as error:
+        print(f"Command failed bringing connection down:\n{error}")
+    
+    try:
+        subprocess.run(["nmcli", "connection", "up", connection_name], check=True)
+    except subprocess.CalledProcessError as error:
+        print(f"Command failed bringing connection up:\n{error}")
