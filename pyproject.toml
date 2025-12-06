@@ -24,3 +24,7 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.scripts]
+set-ip = "slvrov_tools.set_ip:main"
+udp-cam = "slvorv_tools.gst_udp_cam:main"

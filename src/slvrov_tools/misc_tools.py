@@ -2,7 +2,7 @@
 
 import atexit
 import platform
-import signal
+import sys
 
 
 def is_raspberry_pi() -> bool:
@@ -15,6 +15,16 @@ def is_raspberry_pi() -> bool:
 
     uname = platform.uname()
     return "raspberrypi" in uname.node.lower()
+
+def sys_error(msg: str, exit_code: int=1) -> None:
+    print(f"Error: {msg}", file=sys.stderr)
+    sys.exit(exit_code)
+
+
+def get_os():
+    os = platform.system()
+    if os in ["Darwin", "Linux"]: return os
+    else: raise Exception(f"{os} is not supported") 
 
 
 def at_exit(func):
