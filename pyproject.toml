@@ -27,4 +27,4 @@ where = ["src"]
 
 [project.scripts]
 set-ip = "slvrov_tools.set_ip:main"
-udp-cam = "slvorv_tools.gst_udp_cam:main"
+udp-cam = "slvrov_tools.gst_udp_cam:main"
