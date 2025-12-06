@@ -1,7 +1,7 @@
 [project]
 name = "slvrov-tools"
-version = "0.1.12"
-description = "Tools for math, networking, joysticks, I2C devices, and more for use in SLVROV"
+version = "0.1.13"
+description = "Tools for math, networking, joysticks, I2C devices, and more for use in SLVROV. Github: https://github.com/LegionaryOfLogic/slvrov-tools"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
