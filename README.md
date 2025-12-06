@@ -4,11 +4,16 @@ A utility library for SLVROV that includes tools for:
 
 - Non-trivial math operations
 - Network communication
-- Interrupt handling
+- Netowkr setup
+- Exit handling
 - Joysticks
 - I2C control
-- I2C devices (like the PCA9685)
+- PCA9685 utils
 - Misc tools
+- CLI for gstreamer installation, udp video streaming
+
+## Github
+[slrov-tools github](https://github.com/LegionaryOfLogic/slvrov-tools)
 
 ## Installation
 
