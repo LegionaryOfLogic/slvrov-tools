@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Caleb Hofschneider SLVROV 12/2025
 
 import argparse
@@ -21,7 +22,7 @@ def main() -> None:
 
     parser.add_argument("--stream", "-s", action="store_true", help="Flag to indicate stream action")
     parser.add_argument("--recieve", "-r", action="store_true", help="Flag to indicate recieve action")
-    parser.add_argument("--install", "-i", action="store_true", help="Flag to indicate install action - MUST BE RUN TO STREAM OR RECIEVE. BREW IS REQUIRED")
+    parser.add_argument("--install", "-i", action="store_true", help="Flag to indicate install action - MUST BE RUN TO STREAM OR RECIEVE. BREW IS REQUIRED ON MACOS")
 
     args = parser.parse_args()
 
