@@ -3,28 +3,34 @@ name = "slvrov-tools"
 version = "0.1.16"
 description = "Tools for math, networking, joysticks, I2C devices, and more for use in SLVROV."
 readme = "README.md"
-license = { text = "MIT" }
 authors = [
-    { name = "Caleb Hofschneider", email = "calebhof11@gmail.com" }
+    { name = "Caleb Hofschneider", email = "calebhof11@gmail.com" },
 ]
 requires-python = ">=3.7"
-
 dependencies = [
     "smbus2>=0.4.1; sys_platform == 'linux'",
     "PySDL2>=0.9.7",
-    "opencv-python>=4.12"
+    "opencv-python>=4.12",
 ]
 
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-package-dir = {"" = "src"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
+[project.license]
+text = "MIT"
 
 [project.scripts]
 set-ip = "slvrov_tools.set_ip:main"
 udp-cam = "slvrov_tools.gst_udp_cam:main"
+
+[build-system]
+requires = [
+    "setuptools>=61.0",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = [
+    "src",
+]
