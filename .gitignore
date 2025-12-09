@@ -1,5 +1,6 @@
 # CLI that updates pypl for me without having to manually run build, twine, etc.
 update_pypl.py
+test.toml
 
 
 # Byte-compiled / optimized / DLL files
