@@ -1,12 +1,12 @@
 # SLVROV Dec 2025
 
 import cv2  # type: ignore
+import pathlib
 import subprocess
 from .misc_tools import get_os
-from pathlib import Path
 
 
-def save_pictures(cv2_capture: cv2.VideoCapture, path: Path | str=Path("images/img"), count: int=1) -> None:
+def save_pictures(cv2_capture: cv2.VideoCapture, path: pathlib.PosixPath | str=pathlib.Path("images/img"), count: int=1) -> None:
     """Capture and save a specified number of images from a VideoCapture source.
 
     Args:
@@ -26,7 +26,7 @@ def save_pictures(cv2_capture: cv2.VideoCapture, path: Path | str=Path("images/i
     Code adapted from Tommy Fydrich
     """
 
-    if type(path) == str and type(path) != Path: path = Path(path)
+    if type(path) == str and type(path) != pathlib.PosixPath: path = pathlib.Path(path)
     else: raise Exception(f"Argument 'path' must be of type Path or str, not {type(path)}")
 
     directory = path.parent
