@@ -8,7 +8,7 @@ from .misc_tools import get_os
 
 
 def cv2_cam(camera_index: int=0) -> cv2.VideoCapture:
-    cam = cv2.VideoCapture(0)
+    cam = cv2.VideoCapture(camera_index)
     if not cam.isOpened(): raise Exception("Camera not opened")
 
     return cam
