@@ -3,7 +3,22 @@
 import cv2  # type: ignore
 import pathlib
 import subprocess
+import time
 from .misc_tools import get_os
+
+
+def cv2_cam(camera_index: int=0) -> cv2.VideoCapture:
+    cam = cv2.VideoCapture(0)
+    if not cam.isOpened(): raise Exception("Camera not opened")
+
+    return cam
+
+
+def warm_up_camera(cv2_capture: cv2.VideoCapture, count: int = 5, wait: int=0.1) -> None:
+    for _ in range(count):
+        ret, frame = cv2_capture.read()
+        if not ret: print("Warning: Could not read frame during warmup.")
+        time.sleep(wait)
 
 
 def save_pictures(cv2_capture: cv2.VideoCapture, path: pathlib.PosixPath | str=pathlib.Path("images/img"), count: int=1) -> None:
@@ -26,8 +41,7 @@ def save_pictures(cv2_capture: cv2.VideoCapture, path: pathlib.PosixPath | str=p
     Code adapted from Tommy Fydrich
     """
 
-    if type(path) == str and type(path) != pathlib.PosixPath: path = pathlib.Path(path)
-    else: raise Exception(f"Argument 'path' must be of type Path or str, not {type(path)}")
+    if type(path) == str: path = pathlib.Path(path)
 
     directory = path.parent
     directory.mkdir(parents=True, exist_ok=True)
