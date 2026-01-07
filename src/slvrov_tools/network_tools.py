@@ -442,7 +442,7 @@ def nmcli_modify(ipv4_address: str, connection_name: str, ipv4_gateway: str | No
     try:
         subprocess.run(modify_command, check=True)
     except subprocess.CalledProcessError as error:
-        print(f"Commadn failed modifying network settings:\n{error}")
+        print(f"Command failed modifying network settings:\n{error}")
 
 
 def cycle_connection(connection_name: str) -> None:
