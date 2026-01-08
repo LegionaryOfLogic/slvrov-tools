@@ -5,8 +5,8 @@ from time import sleep
 from .i2c_device import I2C_Device
 
 
-@dataclass
 @PendingDeprecationWarning
+@dataclass
 class PCA9685_Device_Descriptor:
 
     min_duty: int | None
