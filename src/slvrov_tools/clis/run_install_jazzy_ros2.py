@@ -1,12 +1,17 @@
-from pathlib import Path
+#!/usr/bin/env python3
+# Caleb Hofschneider SLVROV 1/2025
+
+import argparse
 from ..misc_tools import safe_run
 
+"https://github.com/LegionaryOfLogic/slvrov-tools/"
 
-def main():
-    script = Path(__file__).parent / "install_ros2_jazzy.bash"
+def main() -> None:
     
-    run_bash_script = ["sudo", "bash", str(script)]
-    safe_run(run_bash_script, f"Problem running {script}")
+    parser = argparse.ArgumentParser(description="A script to download ROS2 Ubuntu images for ROV")
+
+    parser.add_argument("name", type=str, choices=[], help="")
+
 
 
 if __name__ == "__main__":
