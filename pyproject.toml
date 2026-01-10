@@ -1,6 +1,6 @@
 [project]
 name = "slvrov-tools"
-version = "0.1.28"
+version = "0.1.30"
 description = "Tools for math, networking, joysticks, I2C devices, and more for use in SLVROV."
 readme = "README.md"
 license = "MIT"
@@ -15,9 +15,9 @@ dependencies = [
 ]
 
 [project.scripts]
-set-ip = "slvrov_tools.set_ip:main"
-udp-cam = "slvrov_tools.gst_udp_cam:main"
-install-ros2-jazzy = "slvrov_tools.run_install_jazzy_ros2:main"
+set-ip = "slvrov_tools.clis.set_ip:main"
+udp-cam = "slvrov_tools.clis.gst_udp_cam:main"
+install-ros2-jazzy = "slvrov_tools.clis.run_install_jazzy_ros2:main"
 
 [tool.setuptools]
 include-package-data = true
