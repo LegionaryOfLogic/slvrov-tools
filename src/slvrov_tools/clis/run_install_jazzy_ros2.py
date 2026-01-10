@@ -1,5 +1,5 @@
 from pathlib import Path
-from .misc_tools import safe_run
+from ..misc_tools import safe_run
 
 
 def main():

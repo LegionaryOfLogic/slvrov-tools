@@ -3,8 +3,8 @@
 
 import argparse
 from ipaddress import ip_address
-from .misc_tools import sys_error
-from .network_tools import cycle_connection, nmcli_modify
+from ..misc_tools import sys_error
+from ..network_tools import cycle_connection, nmcli_modify
 
 RESERVED_START = "192.168.3.2"
 RESERVED_END = "192.168.3.13"

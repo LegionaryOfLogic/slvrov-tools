@@ -2,8 +2,8 @@
 # Caleb Hofschneider SLVROV 12/2025
 
 import argparse
-from .camera_tools import gst_install, gst_stream, gst_recieve
-from .misc_tools import sys_error
+from ..gst_tools import gst_install, gst_stream, gst_recieve
+from ..misc_tools import sys_error
 
 DEVICE="0"
 FRAMERATE="30/1"
