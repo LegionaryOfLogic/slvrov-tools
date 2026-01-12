@@ -57,13 +57,13 @@ def gst_stream(ip: str, port: int, device: int, wxh: str, framerate: str) -> Non
             "v4l2src", 
             f"device=/dev/video{device}", 
             "!", 
-            f"image/jpeg,width={wxh.width},height={wxh.height},framerate={framerate}", 
+            f"image/jpeg,width={width},height={height},framerate={framerate}", 
             "!", 
             "rtpjpegpay", 
             "!", 
             "udpsink", 
             f"host={ip}", 
-            f"port={port}"
+            f"port={port}",
             "sync=false"]
         
     safe_run(command, "Error running stream command")
@@ -76,7 +76,7 @@ def gst_recieve(port: int):
         command = ['gst-launch-1.0', 
              'udpsrc', 
              f'port={port}', 
-             'caps="application/x-rtp,media=video,encoding-name=JPEG,payload=26"', 
+             'caps=application/x-rtp,media=video,encoding-name=JPEG,payload=26', 
              '!', 
              'rtpjpegdepay', 
              '!', 
@@ -88,15 +88,17 @@ def gst_recieve(port: int):
     else:
         print(f"Linux recieving stream on port {port}...")
 
-        command = ["gst-launch-1.0", 
-             "udpsrc", 
-             "port={port}", 
-             "caps='application/x-rtp, encoding-name=JPEG, payload=26'", 
-             "rtpjpegdepay", 
-             "!", 
-             "jpegdec", 
-             "!", 
-             "autovideosink", 
-             "sync=false"]
+        command = ["gst-launch-1.0",
+                   "udpsrc",
+                   f"port={port}",
+                   "caps=application/x-rtp,encoding-name=JPEG,payload=26",
+                   "!",
+                   "rtpjpegdepay",
+                   "!",
+                   "jpegdec",
+                   "!",
+                   "autovideosink",
+                   "sync=false"
+]
         
     safe_run(command, "Error running recieve command")
