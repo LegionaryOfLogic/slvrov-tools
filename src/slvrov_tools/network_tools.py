@@ -419,39 +419,87 @@ class UDP_Communicator(Network_Communicator):
                 else: self.packet_handler(data)
 
 
-def nmcli_modify(ipv4_address: str, connection_name: str, ipv4_gateway: str | None=None, ipv4_dns: str="8.8.8.8") -> None:
+from .misc_tools import safe_run
+import shutil
+
+
+def has_NetworkManager() -> bool:
+    # from ChatGPT
+
+    return shutil.which("nmcli") is not None and \
+           subprocess.run(
+               ["systemctl", "is-active", "--quiet", "NetworkManager"]
+           ).returncode == 0
+
+
+def has_networkd() -> bool:
+    # from ChatGPT
+
+    return subprocess.run(
+        ["systemctl", "is-active", "--quiet", "systemd-networkd"]
+    ).returncode == 0
+
+
+def NetworkManager_connection_down(connection_name: str) -> None:
+    safe_run(["nmcli", "connection", "down", connection_name], "Command failed bringing connection down")
+
+
+def NetworkManager_connection_up(connection_name: str) -> None:
+    safe_run(["nmcli", "connection", "up", connection_name], "Command failed bringing connection up")
+
+
+def NetworkManager_cycle_connection(connection_name: str) -> None:
+    NetworkManager_connection_down(connection_name)
+    NetworkManager_connection_up(connection_name)
+
+
+def NetworkManager_modify_network(ipv4_address: str, connection_name: str, ipv4_gateway: str | None=None, ipv4_dns: str="8.8.8.8") -> None:
     start_modify_command = [
         "nmcli",
         "connection",
         "modify",
         connection_name,
         "ipv4.addresses",
-        ipv4_address
+        f"{ipv4_address}/24"
         ]
 
     end_modify_command = [
         "ipv4.dns",
         ipv4_dns,
         "ipv4.method",
-        "manual"
+        "manual",
+        "ipv6.method",
+        "ignore"
         ]
 
     if ipv4_gateway is not None: modify_command = start_modify_command + ["ipv4.gateway", ipv4_gateway] + end_modify_command
     else: modify_command = start_modify_command + end_modify_command
 
-    try:
-        subprocess.run(modify_command, check=True)
-    except subprocess.CalledProcessError as error:
-        print(f"Command failed modifying network settings:\n{error}")
+    safe_run(modify_command, "Command failed modifying network settings")
+    NetworkManager_connection_up(connection_name)
 
 
-def cycle_connection(connection_name: str) -> None:
-    try:
-        subprocess.run(["nmcli", "connection", "down", connection_name], check=True)
-    except subprocess.CalledProcessError as error:
-        print(f"Command failed bringing connection down:\n{error}")
-    
-    try:
-        subprocess.run(["nmcli", "connection", "up", connection_name], check=True)
-    except subprocess.CalledProcessError as error:
-        print(f"Command failed bringing connection up:\n{error}")
+from pathlib import Path
+import textwrap
+
+
+def networkd_set_ip(ipv4_address: str, interface_name: str) -> None:
+    # from ChatGPT
+
+    path = Path("/etc/netplan/01-direct-eth.yaml")
+
+    config = f"""\
+    network:
+      version: 2
+      renderer: networkd
+      ethernets:
+        {interface_name}:
+          dhcp4: no
+          dhcp6: no
+          addresses:
+            - {ipv4_address}/24
+          optional: true
+    """
+
+    path.write_text(textwrap.dedent(config))
+    safe_run(["netplan", "apply"], "Problem appplying new netplan")
