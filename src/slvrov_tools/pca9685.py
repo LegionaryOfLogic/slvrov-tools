@@ -2,64 +2,68 @@
 
 from dataclasses import dataclass
 from time import sleep
-from .i2c_device import I2C_Device
+from .i2c_bus import I2C_Bus
 
 
-@PendingDeprecationWarning
 @dataclass
-class PCA9685_Device_Descriptor:
-
-    min_duty: int | None
-    max_duty: int | None
+class PCA9685_Pin_Config:
+    name: str
+    pins: list[int]
+    minimum: int
     default: int
-    pins: list
-    action_header: str | None=None
+    maximum: int
 
-    def __post_init__(self):
-        if self.action_header is not None: self.encoded_action_header = self.action_header.value.encode()
-        else: self.encoded_action_header = None
-
-    def __repr__(self):
-        return f"Duty Range: {self.min_duty}-{self.max_duty}, Default Duty: {self.default}, Pins: {self.pins}, Action Header: {self.action_header}, Encoded Header: {self.encoded_action_header}"
-    def __str__(self):
-        return f"Duty Range: {self.min_duty}-{self.max_duty}, Default Duty: {self.default}, Pins: {self.pins}"
-
-
-@dataclass
-class PCA9685_Device:
-    min_pwm: int
-    max_pwm: int
-    pins: list
-    default: None | int
+    def _prep_json(self):
+        return self.name, {"pins": self.pins, "minimum": self.minimum, "default": self.default, "maximum": self.maximum}
     
 
-class PCA9685(I2C_Device):
-    """
-    Class allowing basic use of the PCA9685 16-Channel, 12-bit PWM Driver.
+from json import load, dump
 
-    Attributes:
-        pwm_frequency (int): The frequency (Hz) that the driver will output; max is 25_000_000.
-        address (int): I2C address of the driver; default is 0x40.
-        bus (int): I2C bus number; default is 1.
-        pwm_time (int): The time (μs) it takes to complete one PWM cycle at pwm_frequency.
+def write_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str, indent=2) -> None:
+    json_dict = {}
 
-    Methods:
-        clear(): Clears the MODE1 register, allowing the oscillator to start.
-        write_prescale(): Calculates and writes the prescale that lowers the driver's clock frequency to the pwm frequency.
-        write_duty_cycle(pin_number: int, pulse_length: float, start: int=0): Writes when the "on" pulse starts and stops; default start is 0.
-    """
+    for config in configs:
+        name, config_json = config._prep_json()
 
-    def __init__(self, pwm_frequency: int, address: int=0x40, bus: int=1):
-        """
-        Initializes PCA9685_BASIC object attributes.
+        if name in json_dict: raise NameError(f"Name {name} already exists in pwm pin configs. Each config must have a unique str as a name.")
+        json_dict[name] = config_json
 
-        Args:
-            pwm_frequency (int): the frequency (Hz) that the driver will output; max is 25_000_000.
-            address (int): I2C address of the driver; default is 0x40.
-            bus (int): I2C bus number; default is 1.
-        """
+    with open(json_file, "w") as file:
+        dump(json_dict, file, indent)
+
+
+def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str, indent=2) -> None:
+    with open(json_file, 'r') as file:
+        configs_json: dict = load(file)
+
+        for config in configs:
+            name, config_json = config._prep_json()
+
+            if name in configs_json: raise NameError(f"Name {name} already exists in pwm pin configs. Each config must have a unique str as a name.")
+            configs_json[name] = config_json
+
+        dump(configs_json, file, indent)
+
+
+def get_pwm_pin_map(pwm_pin_config_file: str) -> dict:
+    with open(pwm_pin_config_file, "r") as file:
+        configs = load(file)
+    
+    return configs
+    
+
+class PCA9685():
+
+    def __init__(self, pwm_frequency: int, bus: I2C_Bus, address: int=0x40):
+
+        self.bus = bus
+        self.address = address
         
-        super().__init__(address, bus)
+        self.write_byte = self.bus.write_byte
+        self.read_byte = self.bus.read_byte
+        self.write_two_bytes = self.bus.write_two_bytes
+        self.read_two_bytes = self.bus.read_two_bytes
+
         self.pwm_frequency = pwm_frequency
         self.pwm_time = 1_000_000 / pwm_frequency
 
@@ -68,16 +72,16 @@ class PCA9685(I2C_Device):
         Clears the MODE1 register, turning off the SLEEP bit and allowing the oscillator to start.
         """
 
-        self.write_byte(0x00, 0x00)  # Turns off SLEEP bit, allowing oscillator to start
+        self.write_byte(0x00, 0x00, self.address)  # Turns off SLEEP bit, allowing oscillator to start
 
     def write_prescale(self):
         """
         Calculates and writes the prescale that lowers the driver's clock frequency to the pwm frequency.
         """
 
-        self.write_byte(0x00, 0x10)  # Allows PRE_SCALE to be written by setting the MODE1 register
+        self.write_byte(0x00, 0x10, self.address)  # Allows PRE_SCALE to be written by setting the MODE1 register
         prescale = round(25_000_000 / (self.pwm_frequency * 4096) - 1)
-        self.write_byte(0xFE, prescale)
+        self.write_byte(0xFE, prescale, self.address)
         self.clear()  # Starts oscillator
 
     def write_duty_cycle(self, pin_number: int, pulse_length: float, start: int=0):
@@ -101,57 +105,8 @@ class PCA9685(I2C_Device):
 
         if start:  # Else duty starts at 0 seconds by default -- allows for future customization
             start *= 4096 / self.pwm_time
-            self.write_byte(pin_offset + 6, start & 0xFF)
+            self.write_byte(pin_offset + 6, start & 0xFF, self.address)
             self.write_byte(pin_offset + 7, start >> 8)
 
-        self.write_byte(pin_offset + 8, off_time & 0xFF)  # Saves 8 low bits
-        self.write_byte(pin_offset + 9, off_time >> 8)  # Saves 4 high bits
-
-
-class Motor:
-    """
-    Class allowing the control over an ESC or servo through the PCA9685 PWM driver.
-
-    Attributes:
-        pin (int): the pin of the PCA8695 that the motor is on (0 - 15)
-        min_duty (int): the length of the "on" pulse when the motor is at its minimum rotation (μs)
-        max_duty (int): the length of the "on" pulse when the motor is at its maximum rotation (μs)
-        max_rotation (int): the rotational range of the motor. This can be degrees for servos or 'levels' for motors (e.g. 100 fro 100% forward, 0 for 100% backwards)
-        driver (PCA9685): PCA9685 driver being used to control the motor
-
-    Methods:
-        rotate(degrees): rotate motor to specified level of motion
-    """
-
-    def __init__(self, pin: int, min_duty: int, max_duty: int, max_rotation: int, pwm_frequency: int=50, address: int=0x40, bus: int=1):
-        """
-        Initializes Servo object with its attributes and sets up prescale
-
-        Args:
-            pin (int): the pin of the PCA8695 driver that the motor is on (0 - 15)
-            min_duty (int): the length of the "on" pulse when the motor is at its minimum rotation (μs)
-            max_duty (int): the length of the "on" pulse when the motor is at its maximum rotation (μs)
-            max_rotation (int): the rotational range of the motor (degrees); default is 180˚
-            pwm_frequency (int): the frequency (Hz) that the driver will output; max is 25_000_000
-            address (int): I2C address of the PCA9685; default is 0x40
-            bus (int): I2C bus number of the driver; default is 1
-        """
-
-        self.driver = PCA9685(pwm_frequency, address, bus)
-        self.pin = pin
-        self.min_duty = min_duty
-        self.max_duty = max_duty
-        self.max_rotation = max_rotation
-
-    def rotate(self, level: float, wait_time: int=0):
-        """
-        Rotate motor to a specified level of movement.
-
-        Args:
-            level (float): The amount of movement, ranging from 0 to the specified max_rotation. For motors, this would be the degree.
-            wait_time (int): The time (in seconds) to wait in order to give the motor head to rotate if needed. Set to 0 by default.
-        """
-
-        pulse_length = level / self.max_rotation * (self.max_duty - self.min_duty) + self.min_duty
-        self.driver.write_duty_cycle(self.pin, pulse_length)
-        sleep(wait_time)
+        self.write_byte(pin_offset + 8, off_time & 0xFF, self.address)  # Saves 8 low bits
+        self.write_byte(pin_offset + 9, off_time >> 8, self.address)  # Saves 4 high bits

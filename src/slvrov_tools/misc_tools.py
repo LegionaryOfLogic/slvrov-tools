@@ -17,6 +17,7 @@ def is_raspberry_pi() -> bool:
     uname = platform.uname()
     return "raspberrypi" in uname.node.lower()
 
+
 def sys_error(msg: str, exit_code: int=1) -> None:
     print(f"Error: {msg}", file=sys.stderr)
     sys.exit(exit_code)
