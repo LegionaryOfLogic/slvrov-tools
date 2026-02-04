@@ -45,8 +45,8 @@ def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str
         dump(configs_json, file, indent)
 
 
-def get_pwm_pin_map(pwm_pin_config_file: str) -> dict:
-    with open(pwm_pin_config_file, "r") as file:
+def get_pin_configs(pwm_config_file: str) -> dict:
+    with open(pwm_config_file, "r") as file:
         configs = load(file)
     
     return configs
