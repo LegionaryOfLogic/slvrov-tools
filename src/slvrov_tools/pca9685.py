@@ -19,6 +19,7 @@ class PCA9685_Pin_Config:
 
 from json import load, dump
 
+
 def write_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str, indent=2) -> None:
     json_dict = {}
 
