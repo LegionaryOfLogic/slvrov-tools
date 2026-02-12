@@ -1,6 +1,7 @@
 # Caleb Hofschneider SLVROV 12/2024
 
 import struct
+from .misc_tools import at_exit
 
 
 class Joystick:  # ONLY WORKS WITH LINUX!!!!!!!
@@ -52,6 +53,8 @@ class Joystick:  # ONLY WORKS WITH LINUX!!!!!!!
 
             self.packet_size = packet_size
             self.data_format = data_format
+
+            at_exit(self.terminate_read)
 
         def get_event(self):
             """
