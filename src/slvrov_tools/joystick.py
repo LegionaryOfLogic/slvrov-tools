@@ -4,7 +4,7 @@ import struct
 from .misc_tools import at_exit
 
 
-class Joystick:  # ONLY WORKS WITH LINUX!!!!!!!
+class ExecutorJoystick:  # ONLY WORKS WITH LINUX!!!!!!!
         """
         Class with methods allowing access to joystick input on Rapsberry Pi computers
 
@@ -93,7 +93,7 @@ class Joystick:  # ONLY WORKS WITH LINUX!!!!!!!
             else:
                 raise Exception(f"{event[0]} -- Invalid Event Type")
 
-        def init(self, packet_num, axis_code=130, button_code=129, process_packets=False):
+        def handle_init(self, packet_num, axis_code=130, button_code=129, process_packets=False):
             """
             Handles any initial or "set-up" packets sent from joystick, usually data about joystick current position etc.
 
