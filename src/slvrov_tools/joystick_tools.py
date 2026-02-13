@@ -8,6 +8,8 @@ from .misc_tools import at_exit
 
 
 class JoystickEventType(Enum):
+    # Caleb Hofschneider SLVROV 02/2026
+
     button = 1
     axis = 2
     button_on_startup = 129
@@ -16,6 +18,8 @@ class JoystickEventType(Enum):
 
 @dataclass
 class JoystickEvent:
+    # Caleb Hofschneider SLVROV 02/2026
+
     time: int
     event_type: JoystickEventType
     type_index: int
@@ -23,11 +27,14 @@ class JoystickEvent:
 
 
 def get_available_joysticks(path_to_joysticks: str="/dev/input/", joystick_fd_prefix="js") -> list[int]:
+    # Caleb Hofschneider SLVROV 02/2026
+
     joystick_indices = [int(file.name[2:]) for file in Path(path_to_joysticks).glob(f"{joystick_fd_prefix}*")]
     return joystick_indices
 
 
 class SimpleJoystick:
+    # Caleb Hofschneider SLVROV 02/2026, taken from 12/2024 joystick code
     def __init__(self, index: int, packet_size: int=8, data_format: str="IhBB"):
         self.device = open(f"/dev/input/js{index}", "rb")
         self.packet_size = packet_size
@@ -44,6 +51,8 @@ class SimpleJoystick:
 
 
 class ExecutorJoystick(SimpleJoystick):
+    # Caleb Hofschneider SLVROV 12/2024, updated/refactored 02/2026
+
     def __init__(self, index: int, axis_funcs: list, button_funcs: list, packet_size: int= 8, data_format: str= "IhBB"):
         super().__init__(index, packet_size, data_format)
 
