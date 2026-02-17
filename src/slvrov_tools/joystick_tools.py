@@ -72,3 +72,87 @@ class ExecutorJoystick(SimpleJoystick):
         
         for axis_value, axis_func in zip(self.axis, self.axis_funcs): axis_func(axis_value)
         for button_value, button_func in zip(self.buttons, self.button_funcs): button_func(button_value)
+
+
+import asyncio
+import os
+
+class AsyncJoystick:
+    def __init__(self, index: int, callback=None, packet_size: int=8, data_format: str="IhBB"):
+        self.index = index
+        self.callback = callback
+        self.started = False
+
+        self.packet_size = packet_size
+        self.data_format = data_format
+
+        self.path = f"/dev/input/js{self.index}"
+        self.fd = None
+
+        self.latest_event = None
+        self.waiting = []
+
+    def start(self):
+        if self.started: return
+
+        self.fd = os.open(self.path, os.O_RDONLY | os.O_NONBLOCK)
+        self.started = True
+
+        loop = asyncio.get_running_loop()
+        loop.add_reader(self.fd, self.on_joystick_ready)
+
+    def stop(self):
+        if not self.started: return
+
+        loop = asyncio.get_running_loop()
+        loop.remove_reader(self.fd)
+
+        os.close(self.fd)
+
+        self.fd = None
+        self.started = False
+
+    def on_joystick_ready(self):
+        try:
+            js_input = os.read(self.fd, self.packet_size)
+
+            # if we recieve an incomplete or empty bytestring from os.read()
+            if len(js_input) < self.packet_size or not js_input: return
+
+            time, value, event_type, type_index = struct.unpack(self.data_format, js_input)
+            self.latest_event = JoystickEvent(time, value, event_type, type_index)
+
+            # clears waiting list to prevent race condition (I think? it was something AI said to fix)
+            waiting = self.waiting
+            self.waiting = []
+
+            # fufils get_eventc calls waiting for js input
+            for empty_future in waiting:
+                if not empty_future.done(): empty_future.set_result(self.latest_event)
+            self.waiting.clear()
+
+            if self.callback is not None: self.callback(self.latest_event)
+
+        except BlockingIOError:
+            return
+
+    async def get_event(self) -> JoystickEvent:
+        if self.latest_event is not None: 
+
+            # prevents race condition (thanks ChatGPT)
+            # if used in a while loop, this will keep returning the same event until the joystick moves
+            event = self.latest_event
+            self.latest_event = None  # therefore we must set the latest event to none
+
+            return event
+
+        # adds this call of get_event to waiting list to recieve js input
+        loop = asyncio.get_running_loop()
+        empty_future = loop.create_future()
+
+        self.waiting.append(empty_future)
+
+        try:
+            return await empty_future
+        finally:  # According to ChatGPT, this will prevent memory leak
+            if empty_future in self.waiting: self.waiting.remove(empty_future)
