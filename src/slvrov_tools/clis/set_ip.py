@@ -29,8 +29,8 @@ def main() -> None:
     if args.address == "192.168.3.0": sys_error(f"192.168.3.0 is special -- don't use it")
     if not args.address.startswith(BASE) and not args.override: sys_error(f"ROV is currently running on {BASE} IPs.")
 
-    if has_NetworkManager: NetworkManager_modify_network(args.address, args.connection)
-    elif has_networkd: networkd_set_ip(args.address, args.connection)
+    if has_NetworkManager(): NetworkManager_modify_network(args.address, args.connection)
+    elif has_networkd(): networkd_set_ip(args.address, args.connection)
     else: sys_error("No supported network backend. Only work for NetworkManager or networkd")
 
 
