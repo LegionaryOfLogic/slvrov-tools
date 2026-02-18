@@ -441,11 +441,11 @@ def has_networkd() -> bool:
 
 
 def NetworkManager_connection_down(connection_name: str) -> None:
-    safe_run(["nmcli", "connection", "down", connection_name], "Command failed bringing connection down")
+    safe_run(["sudo", "nmcli", "connection", "down", connection_name], "Command failed bringing connection down")
 
 
 def NetworkManager_connection_up(connection_name: str) -> None:
-    safe_run(["nmcli", "connection", "up", connection_name], "Command failed bringing connection up")
+    safe_run(["sudo", "nmcli", "connection", "up", connection_name], "Command failed bringing connection up")
 
 
 def NetworkManager_cycle_connection(connection_name: str) -> None:
@@ -455,6 +455,7 @@ def NetworkManager_cycle_connection(connection_name: str) -> None:
 
 def NetworkManager_modify_network(ipv4_address: str, connection_name: str, ipv4_gateway: str | None=None, ipv4_dns: str="8.8.8.8") -> None:
     start_modify_command = [
+        "sudo",
         "nmcli",
         "connection",
         "modify",
@@ -502,4 +503,4 @@ def networkd_set_ip(ipv4_address: str, interface_name: str) -> None:
     """
 
     path.write_text(textwrap.dedent(config))
-    safe_run(["netplan", "apply"], "Problem appplying new netplan")
+    safe_run(["sudo", "netplan", "apply"], "Problem appplying new netplan")
