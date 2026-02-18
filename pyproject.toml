@@ -34,6 +34,12 @@ where = [
     "src",
 ]
 
+[tool.setuptools.extension."slvrov_tools.clibs.pi2c_tools"]
+sources = [
+    "src/slvrov_tools/clibs/_pi2c_tools.c",
+    "src/slvrov_tools/clibs/_i2c_tools.c"
+]
+
 [build-system]
 requires = [
     "setuptools>=77.0.0",
