@@ -502,5 +502,8 @@ def networkd_set_ip(ipv4_address: str, interface_name: str) -> None:
           optional: true
     """
 
-    path.write_text(textwrap.dedent(config))
-    safe_run(["sudo", "netplan", "apply"], "Problem appplying new netplan")
+    subprocess.run(
+        ["sudo", "tee", path],
+        input=config.encode(),
+        check=True
+    )
