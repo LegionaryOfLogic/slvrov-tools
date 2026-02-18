@@ -1,6 +1,6 @@
 [project]
 name = "slvrov-tools"
-version = "0.1.50"
+version = "0.1.48"
 description = "Tools for math, networking, joysticks, I2C devices, and more for use in SLVROV."
 readme = "README.md"
 license = "MIT"
@@ -32,13 +32,6 @@ slvrov_tools = [
 [tool.setuptools.packages.find]
 where = [
     "src",
-]
-
-[[tool.setuptools.ext-modules]]
-name = "slvrov_tools.clibs.pi2c_tools"
-sources = [
-    "src/slvrov_tools/clibs/_pi2c_tools.c",
-    "src/slvrov_tools/clibs/_i2c_tools.c",
 ]
 
 [build-system]
