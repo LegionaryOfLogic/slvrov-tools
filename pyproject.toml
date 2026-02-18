@@ -1,6 +1,6 @@
 [project]
 name = "slvrov-tools"
-version = "0.1.48"
+version = "0.1.49"
 description = "Tools for math, networking, joysticks, I2C devices, and more for use in SLVROV."
 readme = "README.md"
 license = "MIT"
@@ -9,22 +9,20 @@ authors = [
 ]
 requires-python = ">=3.7"
 dependencies = [
-    "smbus2>=0.4.1; sys_platform == 'linux'",
     "opencv-python>=4.12",
 ]
 
 [project.scripts]
 set-ip = "slvrov_tools.clis.set_ip:main"
 udp-cam = "slvrov_tools.clis.gst_udp_cam:main"
-install-ros2-jazzy = "slvrov_tools.clis.run_install_jazzy_ros2:main"
-
-[tool.setuptools]
-include-package-data = true
 
 [tool.setuptools.package-data]
 slvrov_tools = [
-    "*.bash",
+    "*.so",
 ]
+
+[tool.setuptools]
+include-package-data = true
 
 [tool.setuptools.package-dir]
 "" = "src"
