@@ -17,5 +17,10 @@ A utility library for SLVROV that includes tools for:
 
 ## Installation
 
+# Git
+
+# pip
+
+You may use pip, but this will return an old, unmaintained version of the code. (version 0.1.47)
 ```bash
 pip install slvrov-tools
