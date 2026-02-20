@@ -8,7 +8,7 @@
 #include "i2c_tools.h"
 
 
-int i2c_bus(const char *bus_path) {
+int i2c__open_bus(const char *bus_path) {
     int fd = open(bus_path, O_RDWR);
     if (fd < 0) {
         perror("Failed to open I2C bus");
