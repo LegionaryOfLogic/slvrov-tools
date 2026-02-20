@@ -1,11 +1,11 @@
-from .misc_tols import fits_in_bits, at_exit
+from .misc_tools import fits_in_bits, at_exit
 from .pi2c_tools import *
 
 
 class I2C_Bus:
     def __init__(self, bus: int, target_address: int | None = None):
         self.bus_number = bus
-        self.bus = i2c_open_bus(f"dev/i2c-{bus}")
+        self.bus = i2c_open_bus(f"/dev/i2c-{bus}")
 
         self.target_address = target_address
 

@@ -53,6 +53,7 @@ def get_pin_configs(pwm_config_file: str) -> dict:
     return configs
 
 
+from time import sleep
 from .i2c_tools import *
 
 MODE1_REG = 0x00
@@ -64,11 +65,12 @@ PCA9685_HZ = 25_000_000
 class PCA9685(I2C_Slave):
     def __init__(self, pwm_frequency: int, bus: I2C_Bus, address: int=0x40):
 
-        self.bus = bus
-        self.address = address
+        super().__init__(bus, address)
         
         self.pwm_frequency = pwm_frequency
         self.pwm_time = 1_000_000 / pwm_frequency
+
+        self.write_prescale()
 
     def sleep(self):
         """
@@ -77,6 +79,7 @@ class PCA9685(I2C_Slave):
 
         mode1 = self.read_byte(MODE1_REG)
         self.write_byte(MODE1_REG, mode1 | 0b00010000)
+        sleep(0.0006)  # Waits for the oscillator to stop, as per datasheet recommendation of 500μs
 
     def wake(self):
         """
@@ -120,5 +123,5 @@ class PCA9685(I2C_Slave):
             self.write_byte(pin_offset + 6, start & 0xFF)
             self.write_byte(pin_offset + 7, start >> 8)
 
-        self.write_byte(pin_offset + 8, off_time & 0xFF)  # Saves 8 low bits
-        self.write_byte(pin_offset + 9, off_time >> 8)  # Saves 4 high bits
+        self.write_byte(pin_offset + 8, off_time & 0xFF)  # Saves 8 low bits to LEDn_OFF_L
+        self.write_byte(pin_offset + 9, off_time >> 8)  # Saves 4 high bits to first bits of LEDn_OFF_H; rest are reserved or for special use case which I don't know how to use
