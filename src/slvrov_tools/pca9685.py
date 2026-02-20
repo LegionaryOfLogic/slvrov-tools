@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from time import sleep
-from .i2c_bus import I2C_Bus
 
 
 @dataclass
@@ -63,7 +62,7 @@ PCA9685_HZ = 25_000_000
 
 
 class PCA9685(I2C_Slave):
-    def __init__(self, pwm_frequency: int, bus: I2C_Bus, address: int=0x40):
+    def __init__(self, bus: I2C_Bus, frequency: int=50, address: int=0x40):
 
         super().__init__(bus, address)
         
