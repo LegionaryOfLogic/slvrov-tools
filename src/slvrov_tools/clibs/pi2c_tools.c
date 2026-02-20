@@ -13,7 +13,7 @@ static PyObject* py_i2c_open_bus(PyObject* self, PyObject* args) {
         return NULL;
     }
 
-    int fd = i2c_bus(bus_path);
+    int fd = i2c_open_bus(bus_path);
     if (fd < 0) {
         PyErr_SetFromErrno(PyExc_OSError);
         return NULL; // Error already printed by i2c_bus
