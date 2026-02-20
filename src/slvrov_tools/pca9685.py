@@ -51,39 +51,50 @@ def get_pin_configs(pwm_config_file: str) -> dict:
         configs = load(file)
     
     return configs
-    
 
-class PCA9685():
 
+from .i2c_tools import *
+
+MODE1_REG = 0x00
+PRESCALE_REG = 0xFE
+PCA9685_HZ = 25_000_000
+
+
+
+class PCA9685(I2C_Slave):
     def __init__(self, pwm_frequency: int, bus: I2C_Bus, address: int=0x40):
 
         self.bus = bus
         self.address = address
         
-        self.write_byte = self.bus.write_byte
-        self.read_byte = self.bus.read_byte
-        self.write_two_bytes = self.bus.write_two_bytes
-        self.read_two_bytes = self.bus.read_two_bytes
-
         self.pwm_frequency = pwm_frequency
         self.pwm_time = 1_000_000 / pwm_frequency
 
-    def clear(self):
+    def sleep(self):
         """
-        Clears the MODE1 register, turning off the SLEEP bit and allowing the oscillator to start.
+        Sets the SLEEP bit in the MODE1 register, putting the driver to sleep and allowing PRE_SCALE to be written.
         """
 
-        self.write_byte(0x00, 0x00, self.address)  # Turns off SLEEP bit, allowing oscillator to start
+        mode1 = self.read_byte(MODE1_REG)
+        self.write_byte(MODE1_REG, mode1 | 0b00010000)
+
+    def wake(self):
+        """
+        Clears the SLEEP bit in the MODE1 register, waking the driver up and allowing the oscillator to start.
+        """
+
+        mode1 = self.read_byte(MODE1_REG)
+        self.write_byte(MODE1_REG, mode1 & 0b11101111)
 
     def write_prescale(self):
         """
         Calculates and writes the prescale that lowers the driver's clock frequency to the pwm frequency.
         """
 
-        self.write_byte(0x00, 0x10, self.address)  # Allows PRE_SCALE to be written by setting the MODE1 register
-        prescale = round(25_000_000 / (self.pwm_frequency * 4096) - 1)
-        self.write_byte(0xFE, prescale, self.address)
-        self.clear()  # Starts oscillator
+        self.sleep()  # Allows PRE_SCALE to be written
+        prescale = round(PCA9685_HZ / (self.pwm_frequency * 4096)) - 1
+        self.write_byte(PRESCALE_REG, prescale)
+        self.wake()  # Starts oscillator
 
     def write_duty_cycle(self, pin_number: int, pulse_length: float, start: int=0):
         """
@@ -106,8 +117,8 @@ class PCA9685():
 
         if start:  # Else duty starts at 0 seconds by default -- allows for future customization
             start *= 4096 / self.pwm_time
-            self.write_byte(pin_offset + 6, start & 0xFF, self.address)
+            self.write_byte(pin_offset + 6, start & 0xFF)
             self.write_byte(pin_offset + 7, start >> 8)
 
-        self.write_byte(pin_offset + 8, off_time & 0xFF, self.address)  # Saves 8 low bits
-        self.write_byte(pin_offset + 9, off_time >> 8, self.address)  # Saves 4 high bits
+        self.write_byte(pin_offset + 8, off_time & 0xFF)  # Saves 8 low bits
+        self.write_byte(pin_offset + 9, off_time >> 8)  # Saves 4 high bits

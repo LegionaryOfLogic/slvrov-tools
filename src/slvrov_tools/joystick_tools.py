@@ -77,6 +77,7 @@ class ExecutorJoystick(SimpleJoystick):
 import asyncio
 import os
 
+
 class AsyncJoystick:
     def __init__(self, index: int, callback=None, packet_size: int=8, data_format: str="IhBB"):
         self.index = index
