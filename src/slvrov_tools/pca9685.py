@@ -30,19 +30,6 @@ def write_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str,
 
     with open(json_file, "w") as file:
         dump(json_dict, file, indent=indent)
-
-
-def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str, indent=2) -> None:
-    with open(json_file, 'r') as file:
-        configs_json: dict = load(file)
-
-        for config in configs:
-            name, config_json = config._prep_json()
-
-            if name in configs_json: raise NameError(f"Name {name} already exists in pwm pin configs. Each config must have a unique str as a name.")
-            configs_json[name] = config_json
-
-        dump(configs_json, file, indent=indent)
         
 
 def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str, indent=2) -> None:
@@ -55,7 +42,7 @@ def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str
         for config in configs:
             name, config_json = config._prep_json()
             
-            if name in configs_json: raise NameError(f"Name {name} already exists.")
+            if name in configs_json: raise NameError(f"Name {name} already exists in pwm pin configs. Each config must have a unique str as a name.")
             configs_json[name] = config_json
 
         file.seek(0)  # Move pointer back to the very start
