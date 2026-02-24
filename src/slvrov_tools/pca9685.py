@@ -43,6 +43,24 @@ def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str
             configs_json[name] = config_json
 
         dump(configs_json, file, indent=indent)
+        
+
+def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str, indent=2) -> None:
+    with open(json_file, 'r+') as file:
+        # 1. Load existing data
+        try: configs_json = load(file)
+        except json.JSONDecodeError: configs_json = {}
+
+        # 2. Update with new configs
+        for config in configs:
+            name, config_json = config._prep_json()
+            
+            if name in configs_json: raise NameError(f"Name {name} already exists.")
+            configs_json[name] = config_json
+
+        file.seek(0)  # Move pointer back to the very start
+        dump(configs_json, file, indent=indent)
+        file.truncate()  # Clean up any leftover old data
 
 
 def get_pin_configs(pwm_config_file: str) -> dict:
