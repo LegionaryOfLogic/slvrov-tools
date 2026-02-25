@@ -16,7 +16,7 @@ class PCA9685_Pin_Config:
         return self.name, {"pins": self.pins, "minimum": self.minimum, "default": self.default, "maximum": self.maximum}
     
 
-from json import load, dump
+from json import load, dump, JSONDecodeError
 
 
 def write_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str, indent=2) -> None:
@@ -36,7 +36,7 @@ def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str
     with open(json_file, 'r+') as file:
         # 1. Load existing data
         try: configs_json = load(file)
-        except json.JSONDecodeError: configs_json = {}
+        except JSONDecodeError: configs_json = {}
 
         # 2. Update with new configs
         for config in configs:
