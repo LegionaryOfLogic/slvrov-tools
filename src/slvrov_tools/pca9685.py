@@ -50,7 +50,7 @@ def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str
         file.truncate()  # Clean up any leftover old data
 
 
-def get_pin_configs(pwm_config_file: str) -> dict:
+def get_pca9685_pin_configs(pwm_config_file: str) -> dict:
     with open(pwm_config_file, "r") as file:
         configs = load(file)
     
