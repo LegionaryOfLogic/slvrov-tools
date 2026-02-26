@@ -71,8 +71,8 @@ class PCA9685(I2C_Slave):
 
         super().__init__(bus, address)
         
-        self.pwm_frequency = pwm_frequency
-        self.pwm_time = 1_000_000 / pwm_frequency
+        self.pwm_frequency = frequency
+        self.pwm_time = 1_000_000 / frequency
 
         self.write_prescale()
 
