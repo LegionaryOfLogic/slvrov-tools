@@ -15,8 +15,8 @@ class I2C_Bus:
         if address is None: address = self.target_address
         if address is None: raise ValueError("No target address set and no address provided for write operation.")
 
-        if not fits_in_bits(register, 8, False): raise Exception("Invalid register. Register value too big.")
-        if not fits_in_bits(value, 8): raise Exception("Value is too big.")
+        if not fits_in_bits(register, 8, False): raise Exception(f"Invalid register. Register value {register} too big.")
+        if not fits_in_bits(value, 8): raise Exception(f"Value {value} is too big.")
 
         i2c_write_byte(self.bus, address, register, value)
 
@@ -24,7 +24,7 @@ class I2C_Bus:
         if address is None: address = self.target_address
         if address is None: raise ValueError("No target address set and no address provided for read operation.")
 
-        if not fits_in_bits(register, 8, False): raise Exception("Invalid register. Register value too big.")
+        if not fits_in_bits(register, 8, False): raise Exception(f"Invalid register. Register value {register} too big.")
 
         return i2c_read_byte(self.bus, address, register)
 
@@ -47,12 +47,12 @@ class I2C_Slave:
         self.address = address
 
     def write_byte(self, register: int, value: int):
-        if not fits_in_bits(register, 8, False): raise Exception("Invalid register. Register value too big.")
-        if not fits_in_bits(value, 8): raise Exception("Value is too big.")
+        if not fits_in_bits(register, 8, False): raise Exception(f"Invalid register. Register value {register} too big.")
+        if not fits_in_bits(value, 8): Exception(f"Value {value} is too big.")
 
         self.bus.write_byte_to(register, value, self.address)
 
     def read_byte(self, register: int) -> int:
-        if not fits_in_bits(register, 8, False): raise Exception("Invalid register. Register value too big.")
+        if not fits_in_bits(register, 8, False): raise Exception(f"Invalid register. Register value {register} too big.")
 
         return self.bus.read_byte_from(register, self.address)
