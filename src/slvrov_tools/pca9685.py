@@ -1,6 +1,7 @@
 # Caleb Hofschneider SLV ROV 1/2025
 
 from dataclasses import dataclass
+from pathlib import Path
 from time import sleep
 
 
@@ -20,6 +21,9 @@ from json import load, dump, JSONDecodeError
 
 
 def write_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str, indent=2) -> None:
+    # creates file if not there. The with...as is supposed to handle that, but I've been running into issues.
+    Path(json_file).touch(exist_ok=True)
+        
     json_dict = {}
 
     for config in configs:
@@ -33,6 +37,9 @@ def write_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str,
         
 
 def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str, indent=2) -> None:
+    # creates file if not there. The with...as is supposed to handle that, but I've been running into issues.
+    Path(json_file).touch(exist_ok=True)
+    
     with open(json_file, 'r+') as file:
         # 1. Load existing data
         try: configs_json = load(file)
