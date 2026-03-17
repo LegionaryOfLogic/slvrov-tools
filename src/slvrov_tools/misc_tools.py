@@ -19,11 +19,27 @@ def is_raspberry_pi() -> bool:
 
 
 def sys_error(msg: str, exit_code: int=1) -> None:
+    """Print an error message to stderr and exit.
+
+    Args:
+        msg (str): Message to print.
+        exit_code (int): Process exit code.
+    """
+
     print(f"Error: {msg}", file=sys.stderr)
     sys.exit(exit_code)
 
 
 def get_os():
+    """Return the current supported operating system name.
+
+    Returns:
+        str: ``"Darwin"`` or ``"Linux"``.
+
+    Raises:
+        Exception: If the current platform is unsupported.
+    """
+
     os = platform.system()
     if os in ["Darwin", "Linux"]: return os
     else: raise Exception(f"{os} is not supported") 
@@ -64,6 +80,15 @@ def fits_in_bits(i: int, bits: int, signed: bool | None=None) -> bool:
 
 
 def safe_run(command: list[str], error_msg: str | None=None, exit_at_exception: bool=False, exit_code: int=1, print_error: bool=True) -> None:
+    """Run a subprocess command with lightweight error handling.
+
+    Args:
+        command (list[str]): Command and arguments to execute.
+        error_msg (str | None): Optional message prefix for failures.
+        exit_at_exception (bool): Exit the current process on failure when true.
+        exit_code (int): Exit code to use when ``exit_at_exception`` is true.
+        print_error (bool): Append the subprocess error text to the message.
+    """
 
     try:
         subprocess.run(command, check=True)

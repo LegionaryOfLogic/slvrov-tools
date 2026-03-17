@@ -12,6 +12,8 @@ BASE = "192.168.3"
 
 
 def main() -> None:
+    """Parse CLI arguments and assign a static IPv4 address safely."""
+
     parser = argparse.ArgumentParser(description="Assign a static IPv4 address using nmcli with safety checks.")
 
     parser.add_argument("address", help="IPV4 address to assign to the interface")

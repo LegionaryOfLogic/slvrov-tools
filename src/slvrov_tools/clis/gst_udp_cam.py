@@ -11,6 +11,7 @@ WXH = "1280x720"
 
 
 def main() -> None:
+    """Dispatch the GStreamer install, stream, or receive CLI actions."""
 
     parser = argparse.ArgumentParser(description="A script to simplify the long and verbose gstreamer commands we use in ROV")
 

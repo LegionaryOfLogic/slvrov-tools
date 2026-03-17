@@ -7,6 +7,16 @@ from time import sleep
 
 @dataclass
 class PCA9685_Pin_Config:
+    """Configuration bundle for one named PCA9685 output group.
+
+    Attributes:
+        name (str): Unique config name.
+        pins (list[int]): PCA9685 pin numbers included in this config.
+        minimum (int): Minimum supported value.
+        default (int): Default value.
+        maximum (int): Maximum supported value.
+    """
+
     name: str
     pins: list[int]
     minimum: int
@@ -14,6 +24,12 @@ class PCA9685_Pin_Config:
     maximum: int
 
     def _prep_json(self):
+        """Convert the configuration into a JSON-serializable tuple.
+
+        Returns:
+            tuple[str, dict[str, int | list[int]]]: The config name and body.
+        """
+
         return self.name, {"pins": self.pins, "minimum": self.minimum, "default": self.default, "maximum": self.maximum}
     
 
@@ -21,6 +37,17 @@ from json import load, dump, JSONDecodeError
 
 
 def write_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str, indent=2) -> None:
+    """Write a fresh PCA9685 config mapping to disk.
+
+    Args:
+        configs (list[PCA9685_Pin_Config]): Config objects to serialize.
+        json_file (str): Destination JSON file path.
+        indent (int): JSON indentation width.
+
+    Raises:
+        NameError: If multiple configs use the same name.
+    """
+
     # creates file if not there. The with...as is supposed to handle that, but I've been running into issues.
     Path(json_file).touch(exist_ok=True)
         
@@ -37,6 +64,17 @@ def write_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str,
         
 
 def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str, indent=2) -> None:
+    """Append PCA9685 configs into an existing JSON config file.
+
+    Args:
+        configs (list[PCA9685_Pin_Config]): Config objects to append.
+        json_file (str): Destination JSON file path.
+        indent (int): JSON indentation width.
+
+    Raises:
+        NameError: If an appended config name already exists.
+    """
+
     # creates file if not there. The with...as is supposed to handle that, but I've been running into issues.
     Path(json_file).touch(exist_ok=True)
     
@@ -58,6 +96,15 @@ def append_pca9685_pin_configs(configs: list[PCA9685_Pin_Config], json_file: str
 
 
 def get_pca9685_pin_configs(pwm_config_file: str) -> dict:
+    """Load PCA9685 pin configs from JSON.
+
+    Args:
+        pwm_config_file (str): Path to the JSON config file.
+
+    Returns:
+        dict: Parsed config mapping.
+    """
+
     with open(pwm_config_file, "r") as file:
         configs = load(file)
     
@@ -74,7 +121,16 @@ PCA9685_HZ = 25_000_000
 
 
 class PCA9685(I2C_Slave):
+    """I2C wrapper for the PCA9685 PWM controller."""
+
     def __init__(self, bus: I2C_Bus, frequency: int=50, address: int=0x40):
+        """Initialize the controller and program its PWM frequency.
+
+        Args:
+            bus (I2C_Bus): Open I2C bus to communicate over.
+            frequency (int): Desired PWM frequency in hertz.
+            address (int): I2C address of the controller.
+        """
 
         super().__init__(bus, address)
         

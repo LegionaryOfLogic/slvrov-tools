@@ -8,7 +8,7 @@ from .misc_tools import at_exit
 
 
 class JoystickEventType(Enum):
-    # Caleb Hofschneider SLVROV 02/2026
+    """Enum describing supported Linux joystick event packet types."""
 
     button = 1
     axis = 2
@@ -18,7 +18,14 @@ class JoystickEventType(Enum):
 
 @dataclass
 class JoystickEvent:
-    # Caleb Hofschneider SLVROV 02/2026
+    """Structured representation of a joystick event packet.
+
+    Attributes:
+        time (int): Event timestamp from the joystick device.
+        event_type (JoystickEventType): Type of event represented by the packet.
+        type_index (int): Axis or button index.
+        value (int): Raw event value.
+    """
 
     time: int
     event_type: JoystickEventType
@@ -27,15 +34,32 @@ class JoystickEvent:
 
 
 def get_available_joysticks(path_to_joysticks: str="/dev/input/", joystick_fd_prefix="js") -> list[int]:
-    # Caleb Hofschneider SLVROV 02/2026
+    """List joystick indices available under a device directory.
+
+    Args:
+        path_to_joysticks (str): Directory containing joystick device files.
+        joystick_fd_prefix (str): Filename prefix used by joystick devices.
+
+    Returns:
+        list[int]: Joystick indices inferred from matching device files.
+    """
 
     joystick_indices = [int(file.name[2:]) for file in Path(path_to_joysticks).glob(f"{joystick_fd_prefix}*")]
     return joystick_indices
 
 
 class SimpleJoystick:
-    # Caleb Hofschneider SLVROV 02/2026, taken from 12/2024 joystick code
+    """Blocking reader for Linux joystick device packets."""
+
     def __init__(self, index: int, packet_size: int=8, data_format: str="IhBB"):
+        """Open a joystick device for blocking reads.
+
+        Args:
+            index (int): Joystick device index under ``/dev/input``.
+            packet_size (int): Size of each device packet in bytes.
+            data_format (str): ``struct`` format string for packet unpacking.
+        """
+
         self.device = open(f"/dev/input/js{index}", "rb")
         self.packet_size = packet_size
         self.data_format = data_format
@@ -43,6 +67,11 @@ class SimpleJoystick:
         at_exit(self.device.close)
 
     def get_event(self) -> JoystickEvent:
+        """Read and decode the next joystick event.
+
+        Returns:
+            JoystickEvent: Parsed joystick event.
+        """
 
         input_data = self.device.read(self.packet_size)
         time, value, event_type, type_index = struct.unpack(self.data_format, input_data)
@@ -51,9 +80,19 @@ class SimpleJoystick:
 
 
 class ExecutorJoystick(SimpleJoystick):
-    # Caleb Hofschneider SLVROV 12/2024, updated/refactored 02/2026
+    """Joystick reader that stores state and dispatches callbacks."""
 
     def __init__(self, index: int, axis_funcs: list, button_funcs: list, packet_size: int= 8, data_format: str= "IhBB"):
+        """Initialize a joystick with axis and button callback tables.
+
+        Args:
+            index (int): Joystick device index.
+            axis_funcs (list): Callback functions for each axis slot.
+            button_funcs (list): Callback functions for each button slot.
+            packet_size (int): Size of each packet in bytes.
+            data_format (str): ``struct`` format used to unpack packets.
+        """
+
         super().__init__(index, packet_size, data_format)
 
         self.axis_funcs = axis_funcs
@@ -63,12 +102,21 @@ class ExecutorJoystick(SimpleJoystick):
         self.buttons = [0 for _ in button_funcs]
 
     def interpret_event(self, event: JoystickEvent):
+        """Update stored axis or button state from a joystick event.
+
+        Args:
+            event (JoystickEvent): Event to interpret.
+
+        Raises:
+            NotImplementedError: If the event type is unsupported.
+        """
         
         if event.event_type == JoystickEventType.axis: self.axis[event.type_index] = -event.value
         elif event.event_type == JoystickEventType.button: self.buttons[event.type_index] = event.value
         else: raise NotImplementedError(f"{event.event_type} has not been implemented in this function yet.\nCurrently supports button and axis events")
 
     def execute_events(self):
+        """Run all registered callbacks with the latest stored state."""
         
         for axis_value, axis_func in zip(self.axis, self.axis_funcs): axis_func(axis_value)
         for button_value, button_func in zip(self.buttons, self.button_funcs): button_func(button_value)
@@ -79,7 +127,18 @@ import os
 
 
 class AsyncJoystick:
+    """Asyncio-friendly joystick reader backed by ``loop.add_reader``."""
+
     def __init__(self, index: int, callback=None, packet_size: int=8, data_format: str="IhBB"):
+        """Prepare a non-blocking joystick reader.
+
+        Args:
+            index (int): Joystick device index.
+            callback: Optional callback invoked with each decoded event.
+            packet_size (int): Size of each device packet in bytes.
+            data_format (str): ``struct`` format string for unpacking packets.
+        """
+
         self.index = index
         self.callback = callback
         self.started = False
@@ -94,6 +153,8 @@ class AsyncJoystick:
         self.waiting = []
 
     def start(self):
+        """Start monitoring the joystick file descriptor with the current loop."""
+
         if self.started: return
 
         self.fd = os.open(self.path, os.O_RDONLY | os.O_NONBLOCK)
@@ -103,6 +164,8 @@ class AsyncJoystick:
         loop.add_reader(self.fd, self.on_joystick_ready)
 
     def stop(self):
+        """Stop monitoring the joystick and close the file descriptor."""
+
         if not self.started: return
 
         loop = asyncio.get_running_loop()
@@ -114,6 +177,8 @@ class AsyncJoystick:
         self.started = False
 
     def on_joystick_ready(self):
+        """Consume available joystick input and notify waiters or callbacks."""
+
         try:
             js_input = os.read(self.fd, self.packet_size)
 
@@ -138,6 +203,12 @@ class AsyncJoystick:
             return
 
     async def get_event(self) -> JoystickEvent:
+        """Await the next available joystick event.
+
+        Returns:
+            JoystickEvent: The next decoded event.
+        """
+
         if self.latest_event is not None: 
 
             # prevents race condition (thanks ChatGPT)
