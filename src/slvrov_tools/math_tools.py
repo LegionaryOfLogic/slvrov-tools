@@ -48,6 +48,19 @@ def rotate_point(point: tuple, angle: float, form: str='d') -> tuple:
 
 
 def adjust_to_linear_range(inpt, from_min, from_max, to_min, to_max):
+    """Map a value from one linear range into another.
+
+    Args:
+        inpt: Input value in the source range.
+        from_min: Lower bound of the source range.
+        from_max: Upper bound of the source range.
+        to_min: Lower bound of the destination range.
+        to_max: Upper bound of the destination range.
+
+    Returns:
+        The mapped value in the destination range.
+    """
+
     from_rng = from_max - from_min
     numerator = inpt - from_min
     percent = numerator / from_rng
@@ -80,12 +93,11 @@ class Circle:
         Transforms a point on circle_a to a corresponding point on circle_b using
         translation, scaling, and rotation.
 
-        Parameters:
-            point (tuple): The (x, y) point on circle_a.
-            circle_a (Circle): Source circle.
+        Args:
+            point (tuple): The (x, y) point on this circle.
             circle_b (Circle): Destination circle.
-            angle (float): rotation angle in degrees or radians.
-            form (str): 'd' for an input angle in degrees, 'r' for radians. Default is 'd'.
+            angle (float): Rotation angle in degrees or radians.
+            form (str): ``"d"`` for degrees or ``"r"`` for radians.
 
         Returns:
             tuple: Transformed (x, y) point on circle_b.
@@ -180,18 +192,51 @@ class Ranged_Int():
         else: self.current = self.MAX
 
     def __add__(self, other):
+        """Return the sum of this value and another numeric value.
+
+        Args:
+            other: A numeric value or another ``Ranged_Int``.
+
+        Returns:
+            int | float: The arithmetic sum.
+
+        Raises:
+            NotImplementedError: If ``other`` is not supported.
+        """
+
         if type(other) in (int, float): return self.current + other
         elif type(other) == type(self): return self.current + other.current
 
         raise NotImplementedError
 
     def __sub__(self, other):
+        """Return the difference between this value and another value.
+
+        Args:
+            other: A numeric value or another ``Ranged_Int``.
+
+        Returns:
+            int | float: The arithmetic difference.
+
+        Raises:
+            NotImplementedError: If ``other`` is not supported.
+        """
+
         if type(other) in (int, float): return self.current - other
         elif type(other) == type(self): return self.current - other.current
         
         raise NotImplementedError
     
     def __iadd__(self, other):
+        """Add to the current value while clamping to the maximum bound.
+
+        Args:
+            other: Numeric amount to add.
+
+        Returns:
+            Ranged_Int: This instance after mutation.
+        """
+
         sm = self.current + other
 
         if sm > self.MAX: self.current = self.MAX
@@ -200,6 +245,15 @@ class Ranged_Int():
         return self
 
     def __isub__(self, other):
+        """Subtract from the current value while clamping to the minimum bound.
+
+        Args:
+            other: Numeric amount to subtract.
+
+        Returns:
+            Ranged_Int: This instance after mutation.
+        """
+
         diff = self.current - other
 
         if diff < self.MIN: self.current = self.MIN
@@ -208,6 +262,12 @@ class Ranged_Int():
         return self
 
     def __str__(self):
+        """Return a human-readable representation of the ranged integer.
+
+        Returns:
+            str: String containing the minimum, maximum, and current values.
+        """
+
         return f"Min: {self.MIN}, Max: {self.MAX}, Curr: {self.current}"
 
 
@@ -216,12 +276,12 @@ def map_point_between_circles(point: tuple, circle_a: Circle, circle_b: Circle, 
     Transforms a point on circle_a to a corresponding point on circle_b using
     translation, scaling, and rotation.
 
-    Parameters:
+    Args:
         point (tuple): The (x, y) point on circle_a.
         circle_a (Circle): Source circle.
         circle_b (Circle): Destination circle.
-        angle (float): rotation angle in degrees or radians.
-        form (str): 'd' for an input angle in degrees, 'r' for radians. Default is 'd'.
+        angle (float): Rotation angle in degrees or radians.
+        form (str): ``"d"`` for degrees or ``"r"`` for radians.
 
     Returns:
         tuple: Transformed (x, y) point on circle_b.

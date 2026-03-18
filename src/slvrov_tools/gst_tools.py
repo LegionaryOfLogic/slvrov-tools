@@ -4,6 +4,8 @@ from .misc_tools import get_os, safe_run
 
 
 def gst_install() -> None:
+    """Install GStreamer packages for the current operating system."""
+
     if get_os() == "Darwin":
         print("Installing gstreamer on MacOS using homebrew...")
 
@@ -29,6 +31,16 @@ def gst_install() -> None:
         
 
 def gst_stream(ip: str, port: int, device: int, wxh: str, framerate: str) -> None:
+    """Start a JPEG-over-UDP GStreamer camera stream.
+
+    Args:
+        ip (str): Destination IPv4 address.
+        port (int): Destination UDP port.
+        device (int): Camera device index.
+        wxh (str): Frame dimensions formatted as ``WIDTHxHEIGHT``.
+        framerate (str): GStreamer framerate string such as ``30/1``.
+    """
+
     width, height = wxh.split('x')
 
     if get_os() == "Darwin": 
@@ -70,6 +82,12 @@ def gst_stream(ip: str, port: int, device: int, wxh: str, framerate: str) -> Non
 
 
 def gst_recieve(port: int):
+    """Start a GStreamer UDP receiver for JPEG RTP traffic.
+
+    Args:
+        port (int): UDP port to listen on.
+    """
+
     if get_os() == "Darwin":
         print(f"MacOS recieving stream on port {port}...")
 

@@ -424,7 +424,11 @@ import shutil
 
 
 def has_NetworkManager() -> bool:
-    # from ChatGPT
+    """Check whether NetworkManager and ``nmcli`` are available.
+
+    Returns:
+        bool: ``True`` when NetworkManager is installed and active.
+    """
 
     return shutil.which("nmcli") is not None and \
            subprocess.run(
@@ -433,7 +437,11 @@ def has_NetworkManager() -> bool:
 
 
 def has_networkd() -> bool:
-    # from ChatGPT
+    """Check whether ``systemd-networkd`` is currently active.
+
+    Returns:
+        bool: ``True`` when ``systemd-networkd`` is active.
+    """
 
     return subprocess.run(
         ["systemctl", "is-active", "--quiet", "systemd-networkd"]
@@ -441,19 +449,46 @@ def has_networkd() -> bool:
 
 
 def NetworkManager_connection_down(connection_name: str) -> None:
+    """Deactivate a NetworkManager connection.
+
+    Args:
+        connection_name (str): Connection profile name.
+    """
+
     safe_run(["sudo", "nmcli", "connection", "down", connection_name], "Command failed bringing connection down")
 
 
 def NetworkManager_connection_up(connection_name: str) -> None:
+    """Activate a NetworkManager connection.
+
+    Args:
+        connection_name (str): Connection profile name.
+    """
+
     safe_run(["sudo", "nmcli", "connection", "up", connection_name], "Command failed bringing connection up")
 
 
 def NetworkManager_cycle_connection(connection_name: str) -> None:
+    """Restart a NetworkManager connection.
+
+    Args:
+        connection_name (str): Connection profile name.
+    """
+
     NetworkManager_connection_down(connection_name)
     NetworkManager_connection_up(connection_name)
 
 
 def NetworkManager_modify_network(ipv4_address: str, connection_name: str, ipv4_gateway: str | None=None, ipv4_dns: str="8.8.8.8") -> None:
+    """Apply a static IPv4 configuration through NetworkManager.
+
+    Args:
+        ipv4_address (str): IPv4 address without CIDR suffix.
+        connection_name (str): NetworkManager connection profile name.
+        ipv4_gateway (str | None): Optional IPv4 gateway address.
+        ipv4_dns (str): DNS server address to configure.
+    """
+
     start_modify_command = [
         "sudo",
         "nmcli",
@@ -485,7 +520,12 @@ import textwrap
 
 
 def networkd_set_ip(ipv4_address: str, interface_name: str) -> None:
-    # from ChatGPT
+    """Write a simple netplan config for ``systemd-networkd``.
+
+    Args:
+        ipv4_address (str): IPv4 address without CIDR suffix.
+        interface_name (str): Network interface name.
+    """
 
     path = Path("/etc/netplan/01-direct-eth.yaml")
 

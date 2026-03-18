@@ -6,6 +6,18 @@ import time
 
 
 def cv2_cam(camera_index: int=0) -> cv2.VideoCapture:
+    """Open an OpenCV capture device by index.
+
+    Args:
+        camera_index (int): Index of the camera device to open.
+
+    Returns:
+        cv2.VideoCapture: The opened capture object.
+
+    Raises:
+        Exception: If the camera cannot be opened.
+    """
+
     cam = cv2.VideoCapture(camera_index)
     if not cam.isOpened(): raise Exception("Camera not opened")
 
@@ -13,6 +25,14 @@ def cv2_cam(camera_index: int=0) -> cv2.VideoCapture:
 
 
 def warm_up_camera(cv2_capture: cv2.VideoCapture, count: int = 5, wait: int=0.1) -> None:
+    """Read and discard a few frames so a camera can stabilize.
+
+    Args:
+        cv2_capture (cv2.VideoCapture): Open capture object to warm up.
+        count (int): Number of frames to discard.
+        wait (int): Delay in seconds between reads.
+    """
+
     for _ in range(count):
         ret, frame = cv2_capture.read()
         if not ret: print("Warning: Could not read frame during warmup.")

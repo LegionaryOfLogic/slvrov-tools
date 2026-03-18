@@ -25,10 +25,10 @@ class PCA9685_BASIC:
         """
         Initializes PCA9685_BASIC object attributes.
 
-        Arguments:
-            pwm_frequency (int): the frequency (Hz) that the driver will output; max is 25_000_000
-            address (int): I2C address of the driver; default is 0x40
-            bus (int): I2C bus number; default is 1
+        Args:
+            pwm_frequency (int): Output PWM frequency in hertz.
+            address (int): I2C address of the driver.
+            bus (int): I2C bus number.
         """
         self.bus = smbus2.SMBus(bus)
         self.address = address
@@ -41,25 +41,21 @@ class PCA9685_BASIC:
         """
         Writes a value to a given register on the PCA9685
 
-        Arguments:
-            register (int): a valid register address on the PCA9685 driver
-            value (int): numerical value to write to the register - only accepts whole numbers
+        Args:
+            register (int): Valid PCA9685 register address.
+            value (int): Whole-number value to write.
         """
         self.bus.write_byte_data(self.address, register, value)
 
     def clear(self):
         """
-        Clears the MODE1 register, turning off the SLEEP bit and allowing the oscillator to start
-
-        Takes no arguments (other than self object)
+        Clear the MODE1 register so the oscillator can start.
         """
         self.write(0x00, 0x00)  # Turns off SLEEP bit, allowing oscillator to start
 
     def write_prescale(self):
         """
-        Calculates and writes the prescale that lowers the driver's clock frequency to the pwm frequency
-
-        Takes no arguments (other than self object)
+        Calculate and write the prescale for the configured PWM frequency.
         """
         self.write(0x00, 0x10)  # Allows PRE_SCALE to be written
         prescale = round(25_000_000 / (self.pwm_frequency * 4096) - 1)
@@ -70,10 +66,10 @@ class PCA9685_BASIC:
         """
         Writes when the "on" pulse starts and stops; default start is 0
 
-        Arguments:
-            pin_number (int): the desired pin number of the ouput on the PCA9685 driver, numbers 0 - 15
-            pulse_length (float): the length of the "on" part of the PWM cycle (μs)
-            start (int): how long into the PWM cycle to start the "on" signal (μs); default is 0
+        Args:
+            pin_number (int): Output pin number from 0 to 15.
+            pulse_length (float): Length of the on pulse in microseconds.
+            start (int): Pulse start offset in microseconds.
         """
         if pin_number > 15:
             raise Exception("Pin number out of range")
@@ -110,14 +106,14 @@ class Servo:
         """
         Initializes Servo object with its attributes and sets up prescale
 
-        Arguments:
-            pin (int): the pin of the PCA8695 driver that the servo is on (0 - 15)
-            min_time (float): the length of the "on" pulse when the servo is at its minimum rotation (μs)
-            max_time (float): the length of the "on" pulse when the servo is at its maximum rotation (μs)
-            max_rotation (int): the rotational range of the servo (degrees); default is 180˚
-            pwm_frequency (int): the frequency (Hz) that the driver will output; max is 25_000_000
-            address (int): I2C address of the PCA9685; default is 0x40
-            bus (int): I2C bus number of the driver; default is 1
+        Args:
+            pin (int): PCA9685 output pin from 0 to 15.
+            min_time (float): Pulse length at minimum rotation in microseconds.
+            max_time (float): Pulse length at maximum rotation in microseconds.
+            max_rotation (int): Maximum supported servo rotation in degrees.
+            pwm_frequency (int): Driver PWM frequency in hertz.
+            address (int): I2C address of the PCA9685.
+            bus (int): I2C bus number.
         """
         self.pin = pin
         self.min_time = min_time
@@ -129,10 +125,11 @@ class Servo:
 
     def rotate(self, degrees, wait_time):
         """
-        Rotate servo to specified degrees
+        Rotate the servo to a specified angle.
 
-        Arguments:
-            degrees (float): the desired amount of rotation (degrees˚)
+        Args:
+            degrees (float): Desired servo angle in degrees.
+            wait_time (float): Time in seconds to wait for movement to complete.
         """
         pulse_length = degrees / self.max_rotation * (self.max_time - self.min_time) + self.min_time
         self.driver.write_duty_cycle(self.pin, pulse_length)
@@ -140,10 +137,6 @@ class Servo:
 
     def stop(self):
         """
-        Terminates duty cycle to stop servo rotating
-        Servo can be "reconnected" and moved again by calling rotate(degrees)
-
-        Takes no arguments (other than self object)
+        Stop driving the servo by writing a zero-length pulse.
         """
         self.driver.write_duty_cycle(self.pin, 0)
-
