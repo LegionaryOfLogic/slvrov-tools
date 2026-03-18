@@ -39,7 +39,7 @@ def main() -> None:
     if addr.version != 4:
         sys_error(f"IPv6 is not supported by set-ip: {args.address}")
 
-    if ip_address(RESERVED_START) <= addr <= ip_address(RESERVED_END): sys_error(f"IP addresses {RESERVED_START} through {RESERVED_END} are reserved")
+    if not args.override and ip_address(RESERVED_START) <= addr <= ip_address(RESERVED_END): sys_error(f"IP addresses {RESERVED_START} through {RESERVED_END} are reserved")
     if args.address == "192.168.3.0": sys_error(f"192.168.3.0 is special -- don't use it")
     if not args.address.startswith(BASE) and not args.override: sys_error(f"ROV is currently running on {BASE} IPs.")
 
