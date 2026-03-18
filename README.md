@@ -12,6 +12,21 @@ A utility library for SLVROV that includes tools for:
 - Misc tools
 - CLI for gstreamer installation, udp video streaming
 
+## CLI Usage
+
+After `pip3 install .`, the package exposes a `set-ip` command for assigning
+static `/24` IPv4 addresses on Ubuntu.
+
+```bash
+set-ip 192.168.3.20
+set-ip 192.168.3.20 --interface eth0
+set-ip 192.168.3.20 --interface eth0 --connection "Wired connection 1"
+```
+
+`set-ip` detects whether the machine is using NetworkManager or
+`systemd-networkd` via netplan and applies the address using the appropriate
+backend.
+
 ## Build From Source
 
 0. Install dependencies
@@ -37,4 +52,3 @@ $ cd slvrov-tools
 ```bash
 /slvrov-tools$ pip3 install .
 ```
-

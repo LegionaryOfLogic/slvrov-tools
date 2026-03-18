@@ -418,9 +418,9 @@ class UDP_Communicator(Network_Communicator):
                 if threaded: self.spawn_handler_thread(data)
                 else: self.packet_handler(data)
 
-
-from .misc_tools import safe_run
 import shutil
+from pathlib import Path
+import textwrap
 
 
 def has_NetworkManager() -> bool:
@@ -433,19 +433,135 @@ def has_NetworkManager() -> bool:
 
 
 def has_networkd() -> bool:
-    # from ChatGPT
-
-    return subprocess.run(
+    return shutil.which("netplan") is not None and subprocess.run(
         ["systemctl", "is-active", "--quiet", "systemd-networkd"]
     ).returncode == 0
 
 
+# DISCLAIMER: The functions below were written by ChatGPT. 
+def _run_command(
+    command: list[str],
+    error_msg: str,
+    capture_output: bool=False,
+) -> subprocess.CompletedProcess[str]:
+    """
+    Runs a command and returns its completed process.
+
+    Args:
+        command (list[str]): Command to execute.
+        error_msg (str): Message included if the command fails.
+
+    Returns:
+        subprocess.CompletedProcess[str]: Command result with captured text output.
+
+    Raises:
+        Exception: If the command returns a non-zero exit code.
+    """
+
+    try:
+        return subprocess.run(command, check=True, text=True, capture_output=capture_output)
+    except subprocess.CalledProcessError as error:
+        stderr = (error.stderr or "").strip()
+        stdout = (error.stdout or "").strip()
+        details = stderr or stdout or str(error)
+        raise Exception(f"{error_msg}: {details}")
+
+
+def list_interfaces() -> list[str]:
+    """
+    Returns non-loopback network interfaces present on the host.
+
+    Returns:
+        list[str]: Interface names ordered alphabetically.
+    """
+
+    sys_class_net = Path("/sys/class/net")
+    if not sys_class_net.exists():
+        return []
+
+    return sorted(path.name for path in sys_class_net.iterdir() if path.name != "lo")
+
+
+def pick_default_interface() -> str:
+    """
+    Chooses a default interface for CLI usage.
+
+    Preference is given to `eth0` because that is the common SLVROV target,
+    otherwise the first non-loopback interface is used.
+
+    Returns:
+        str: Selected interface name.
+
+    Raises:
+        Exception: If no usable interface is found.
+    """
+
+    interfaces = list_interfaces()
+    if "eth0" in interfaces:
+        return "eth0"
+    if interfaces:
+        return interfaces[0]
+    raise Exception("No non-loopback network interface was found")
+
+
+def validate_interface(interface_name: str) -> str:
+    """
+    Validates that an interface exists on the current host.
+
+    Args:
+        interface_name (str): Interface name to validate.
+
+    Returns:
+        str: The validated interface name.
+
+    Raises:
+        Exception: If the interface does not exist.
+    """
+
+    interfaces = list_interfaces()
+    if interface_name not in interfaces:
+        available = ", ".join(interfaces) if interfaces else "none"
+        raise Exception(f"Interface {interface_name} was not found. Available interfaces: {available}")
+    return interface_name
+
+
+def NetworkManager_get_connection_name(interface_name: str) -> str:
+    """
+    Resolves the active NetworkManager connection profile for a device.
+
+    Args:
+        interface_name (str): Linux network interface name such as `eth0`.
+
+    Returns:
+        str: NetworkManager connection profile name.
+
+    Raises:
+        Exception: If NetworkManager has no connection profile for the device.
+    """
+
+    result = _run_command(
+        ["nmcli", "-g", "GENERAL.CONNECTION", "device", "show", interface_name],
+        f"Failed to look up the NetworkManager connection for {interface_name}",
+        capture_output=True,
+    )
+    connection_name = result.stdout.strip()
+    if not connection_name or connection_name == "--":
+        raise Exception(f"No active NetworkManager connection is attached to {interface_name}")
+    return connection_name
+
+
 def NetworkManager_connection_down(connection_name: str) -> None:
-    safe_run(["sudo", "nmcli", "connection", "down", connection_name], "Command failed bringing connection down")
+    _run_command(
+        ["sudo", "nmcli", "connection", "down", connection_name],
+        f"Command failed bringing connection {connection_name} down",
+    )
 
 
 def NetworkManager_connection_up(connection_name: str) -> None:
-    safe_run(["sudo", "nmcli", "connection", "up", connection_name], "Command failed bringing connection up")
+    _run_command(
+        ["sudo", "nmcli", "connection", "up", connection_name],
+        f"Command failed bringing connection {connection_name} up",
+    )
 
 
 def NetworkManager_cycle_connection(connection_name: str) -> None:
@@ -476,34 +592,88 @@ def NetworkManager_modify_network(ipv4_address: str, connection_name: str, ipv4_
     if ipv4_gateway is not None: modify_command = start_modify_command + ["ipv4.gateway", ipv4_gateway] + end_modify_command
     else: modify_command = start_modify_command + end_modify_command
 
-    safe_run(modify_command, "Command failed modifying network settings")
+    _run_command(
+        modify_command,
+        f"Command failed modifying network settings for {connection_name}",
+    )
     NetworkManager_connection_up(connection_name)
 
 
-from pathlib import Path
-import textwrap
-
-
 def networkd_set_ip(ipv4_address: str, interface_name: str) -> None:
-    # from ChatGPT
+    """
+    Writes a netplan file for a static IPv4 address and applies it.
 
-    path = Path("/etc/netplan/01-direct-eth.yaml")
+    Ubuntu Server normally drives `systemd-networkd` through netplan, so this
+    helper updates a dedicated netplan file instead of trying to edit lower
+    level `.network` files directly.
 
-    config = f"""\
+    Args:
+        ipv4_address (str): IPv4 address without CIDR suffix.
+        interface_name (str): Interface name such as `eth0`.
+    """
+
+    path = Path(f"/etc/netplan/99-slvrov-static-{interface_name}.yaml")
+
+    config = textwrap.dedent(f"""\
     network:
       version: 2
       renderer: networkd
       ethernets:
         {interface_name}:
-          dhcp4: no
-          dhcp6: no
+          dhcp4: false
+          dhcp6: false
           addresses:
             - {ipv4_address}/24
           optional: true
+    """)
+
+    try:
+        subprocess.run(
+            ["sudo", "tee", str(path)],
+            input=config,
+            text=True,
+            stdout=subprocess.DEVNULL,
+            check=True,
+        )
+    except subprocess.CalledProcessError as error:
+        stderr = (error.stderr or "").strip()
+        stdout = (error.stdout or "").strip()
+        details = stderr or stdout or str(error)
+        raise Exception(f"Failed writing netplan config to {path}: {details}")
+    _run_command(["sudo", "netplan", "generate"], "Command failed generating netplan config")
+    _run_command(["sudo", "netplan", "apply"], "Command failed applying netplan config")
+
+
+def set_static_ipv4(ipv4_address: str, interface_name: str | None=None, connection_name: str | None=None) -> tuple[str, str]:
+    """
+    Applies a static IPv4 address through the active Ubuntu networking backend.
+
+    Args:
+        ipv4_address (str): IPv4 address without CIDR suffix.
+        interface_name (str | None): Network interface to configure. If omitted,
+            an appropriate default interface is chosen.
+        connection_name (str | None): NetworkManager connection profile to modify.
+            If omitted and NetworkManager is active, the connection for the
+            interface is resolved automatically.
+
+    Returns:
+        tuple[str, str]: `(backend, target)` where backend is either
+        `NetworkManager` or `networkd`, and target is the profile or interface
+        that was modified.
+
+    Raises:
+        Exception: If no supported backend is available.
     """
 
-    subprocess.run(
-        ["sudo", "tee", path],
-        input=config.encode(),
-        check=True
-    )
+    resolved_interface = validate_interface(interface_name or pick_default_interface())
+
+    if has_NetworkManager():
+        resolved_connection = connection_name or NetworkManager_get_connection_name(resolved_interface)
+        NetworkManager_modify_network(ipv4_address, resolved_connection)
+        return "NetworkManager", resolved_connection
+
+    if has_networkd():
+        networkd_set_ip(ipv4_address, resolved_interface)
+        return "networkd", resolved_interface
+
+    raise Exception("No supported network backend found. This tool currently supports NetworkManager and systemd-networkd via netplan.")
