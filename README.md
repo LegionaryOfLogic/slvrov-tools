@@ -73,5 +73,3 @@ Set a static IP address:
 ```bash
 set-ip 192.168.3.20 --connection eth0
 ```
-=======
->>>>>>> codex/networkd_ip_script
