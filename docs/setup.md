@@ -87,7 +87,10 @@ make
 
 Install it as a Python package:
 
+(Not sure if it should be in venv or not.)
+
 ```bash
+source ~/venv/bin/activate
 pip3 install .
 ```
 
