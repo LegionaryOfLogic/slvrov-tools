@@ -45,6 +45,7 @@ source venv/bin/activate
 These packages are required for `colcon build` to work correctly inside a virtual environment:
 
 ```bash
+pip install pyyaml
 pip install empy==3.3.4 catkin-pkg lark pyparsing
 ```
 
