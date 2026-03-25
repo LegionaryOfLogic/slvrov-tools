@@ -31,6 +31,7 @@ sudo apt install python3-opencv
 ROS 2 works best with a dedicated virtual environment to avoid package conflicts.
 
 ```bash
+sudo apt install python3.12-venv
 python3 -m venv venv
 source venv/bin/activate
 ```
