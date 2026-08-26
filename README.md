@@ -39,7 +39,6 @@ $ cd slvrov-tools
 ```bash
 /slvrov-tools$ pip3 install .
 ```
-<<<<<<< HEAD
 
 The package declares `opencv-python` as a dependency. Some modules also rely on system-level tools or hardware-specific components:
 
